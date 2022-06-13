@@ -1,6 +1,7 @@
 import axios from "axios";
 import express from "express";
 import cors from "cors";
+import serverless from "serverless-http";
 
 const app = express();
 const router = express.Router();
@@ -11,38 +12,26 @@ app.use(
     origin: true,
   })
 );
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-async function getHTML() {
+router.post("/", async (req, res) => {
+  const { url } = req.body;
   try {
-    const response = await axios.get("https://www.naver.com");
+    console.log(url);
+    const { data } = await axios.get(url);
 
-    return response.data;
-  } catch {
-    throw new Error("monster not found");
+    res.json({
+      html: data,
+    });
+  } catch (e) {
+    res.json({
+      error: e.message,
+    });
   }
-}
+});
 
-export async function handler(req) {
-  console.log("req", req);
-  try {
-    const data = await getHTML();
+app.use(`/`, router);
 
-    return {
-      statusCode: 200,
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    };
-  } catch (err) {
-    return {
-      statusCode: 500,
-      headers: {
-        "Content-Type": "application.json",
-      },
-      body: JSON.stringify({
-        message: err.message,
-      }),
-    };
-  }
-}
+export const handler = serverless(app);
+export default app;
