@@ -21,11 +21,11 @@ router.post("/", async (req, res) => {
     console.log(url);
     const { data } = await axios.get(url);
 
-    res.json({
+    res.status(200).json({
       html: data,
     });
   } catch (e) {
-    res.json({
+    res.status(500).json({
       error: e.message,
     });
   }
